@@ -4,13 +4,10 @@ import metalreception.exception.business.MetalInUseException;
 import metalreception.exception.notfound.MetalNotFoundException;
 import metalreception.exception.validation.ValidationException;
 import metalreception.model.Metal;
-import metalreception.model.Reception;
 import metalreception.service.MetalService;
-import metalreception.service.ReceptionService;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 public class MetalMenuHandler {
     private final MetalService metalService;
@@ -86,7 +83,7 @@ public class MetalMenuHandler {
 
         System.out.println("Текущая цена за кг: " + metal.getPricePerKg());
         System.out.println("Хотите изменить цену? (да/нет): ");
-        Boolean changePrice = inputReader.readYesNo();
+        boolean changePrice = inputReader.readYesNo();
 
         BigDecimal newPrice = null;
         if (changePrice) {

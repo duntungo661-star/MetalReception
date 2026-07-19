@@ -4,12 +4,9 @@ import metalreception.exception.business.ClientInUseException;
 import metalreception.exception.notfound.ClientNotFoundException;
 import metalreception.exception.validation.ValidationException;
 import metalreception.model.Client;
-import metalreception.model.Reception;
 import metalreception.service.ClientService;
-import metalreception.service.ReceptionService;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ClientMenuHandler {
     private final ClientService clientService;
