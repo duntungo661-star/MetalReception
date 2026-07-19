@@ -70,29 +70,29 @@ public class ReceptionMenuHandler {
 
         try {
             Reception reception = receptionService.createReception(client, metal, weight);
-            System.out.println("Приёмка создана " + reception);
+            System.out.println("Приёмка создана: " + reception);
         } catch (ValidationException e) {
-            System.out.println("Ошибка " + e.getMessage());
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
-    public void printClients(List<Client> clients) {
+    private void printClients(List<Client> clients) {
         if (clients.isEmpty()) {
             System.out.println("Клиентов пока нет.");
             return;
         }
-        System.out.println("\n======== Список клиентов ========");
+        System.out.println("\n=== Список клиентов ===");
         for (Client client : clients) {
             System.out.println(client);
         }
     }
 
-    public void printMetals(List<Metal> metals) {
+    private void printMetals(List<Metal> metals) {
         if (metals.isEmpty()) {
             System.out.println("Металлов пока нет.");
             return;
         }
-        System.out.println("\n======== Список металлов ========");
+        System.out.println("\n=== Список металлов ===");
         for (Metal metal : metals) {
             System.out.println(metal);
         }
@@ -102,10 +102,10 @@ public class ReceptionMenuHandler {
         List<Reception> receptions = receptionService.getAllReceptions();
 
         if (receptions.isEmpty()) {
-            System.out.println("Приемок пока нет.");
+            System.out.println("Приёмок пока нет.");
             return;
         }
-        System.out.println("\n=== Список приема металла ===");
+        System.out.println("\n=== Список приёма металла ===");
 
         for (Reception reception : receptions) {
             System.out.println(reception);
@@ -135,7 +135,7 @@ public class ReceptionMenuHandler {
             Reception updated = receptionService.updateReceptionWeight(receptionId, newWeight);
             System.out.println("Приёмка изменена: " + updated);
         } catch (ValidationException e) {
-            System.out.println("Ошибка " + e.getMessage());
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
@@ -159,7 +159,7 @@ public class ReceptionMenuHandler {
             return;
         }
 
-        System.out.println("\n=========Приёмки клиента==========");
+        System.out.println("\n=== Приёмки клиента ===");
         for (Reception reception : receptions) {
             System.out.println(reception);
         }

@@ -94,7 +94,7 @@ public class ClientMenuHandler {
             Client updated = clientService.updateClient(clientId, newName, clearPhone ? null : phoneInput, clearPhone);
             System.out.println("Клиент изменен: " + updated);
         } catch (ValidationException e) {
-            System.out.println("Ошибка " + e.getMessage());
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
@@ -113,7 +113,7 @@ public class ClientMenuHandler {
             return;
         }
 
-        System.out.println("\n=========Найденные клиенты==========");
+        System.out.println("\n=== Найденные клиенты ===");
         for (Client client : found) {
             System.out.println(client);
         }

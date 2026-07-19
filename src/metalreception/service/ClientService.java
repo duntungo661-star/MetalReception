@@ -67,7 +67,7 @@ public class ClientService {
     public void deleteClient(int id) {
         getByIdOrThrow(id);
         if (usageChecker.isClientInUse(id)) {
-            throw new ClientInUseException("Нельзя удалить клиента с id=" + id + " он есть в истории приёмок.");
+            throw new ClientInUseException("Нельзя удалить клиента с id=" + id + ": он есть в истории приёмок.");
         }
         clients.removeIf(client -> client.getId() == id);
     }

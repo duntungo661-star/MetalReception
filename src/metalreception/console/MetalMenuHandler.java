@@ -37,7 +37,7 @@ public class MetalMenuHandler {
         List<Metal> metals = metalService.getAllMetals();
 
         if (metals.isEmpty()) {
-            System.out.println("Металла пока нет.");
+            System.out.println("Металлов пока нет.");
             return;
         }
         System.out.println("\n=== Список металлов ===");
@@ -93,9 +93,9 @@ public class MetalMenuHandler {
 
         try {
             Metal updated = metalService.updateMetal(metalId, newName, newPrice);
-            System.out.println("Металл изменён " + updated);
+            System.out.println("Металл изменён: " + updated);
         } catch (ValidationException e) {
-            System.out.println("Ошибка " + e.getMessage());
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
@@ -114,7 +114,7 @@ public class MetalMenuHandler {
             return;
         }
 
-        System.out.println("\n=========Найденные металлы==========");
+        System.out.println("\n=== Найденные металлы ===");
         for (Metal metal : found) {
             System.out.println(metal);
         }

@@ -67,7 +67,7 @@ public class MetalService {
     public void deleteMetal(int id) {
         getByIdOrThrow(id);
         if (usageChecker.isMetalInUse(id)) {
-            throw new MetalInUseException("Нельзя удалить металл с id=" + id + " он есть в истории приёмок.");
+            throw new MetalInUseException("Нельзя удалить металл с id=" + id + ": он есть в истории приёмок.");
         }
         metals.removeIf(metal -> metal.getId() == id);
     }
