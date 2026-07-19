@@ -89,7 +89,7 @@ public class ReceptionMenuHandler {
 
     public void printMetals(List<Metal> metals) {
         if (metals.isEmpty()) {
-            System.out.println("Клиентов пока нет.");
+            System.out.println("Металлов пока нет.");
             return;
         }
         System.out.println("\n======== Список металлов ========");

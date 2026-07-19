@@ -6,7 +6,7 @@ import metalreception.service.MetalService;
 import metalreception.service.ReceptionService;
 
 public class Main {
-    static void main() {
+    public static void main(String[] args) {
         ReceptionService receptionService = new ReceptionService();
         ConsoleInputReader inputReader = new ConsoleInputReader();
         ClientService clientService = new ClientService(receptionService);
