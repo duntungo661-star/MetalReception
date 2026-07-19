@@ -11,7 +11,6 @@ public class ConsoleInputReader {
             System.out.println("Введите число: ");
             scanner.next();
         }
-
         int value = scanner.nextInt();
         scanner.nextLine();
         return value;
@@ -33,7 +32,19 @@ public class ConsoleInputReader {
     }
 
     public String readLine() {
-        return scanner.nextLine();
+        return scanner.nextLine().strip();
     }
 
+    public boolean readYesNo() {
+        while(true) {
+            String input = readLine().toLowerCase();
+            if (input.equals("да")) {
+                return true;
+            }
+            if (input.equals("нет")) {
+                return false;
+            }
+            System.out.println("Пожалуйста, введите 'да' или 'нет': ");
+        }
+    }
 }

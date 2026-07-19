@@ -1,5 +1,8 @@
 package metalreception.console;
 
+import metalreception.exception.business.MetalInUseException;
+import metalreception.exception.notfound.MetalNotFoundException;
+import metalreception.exception.validation.ValidationException;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
 import metalreception.service.MetalService;
@@ -11,13 +14,10 @@ import java.util.Optional;
 
 public class MetalMenuHandler {
     private final MetalService metalService;
-    private final ReceptionService receptionService;
     private final ConsoleInputReader inputReader;
 
-    public MetalMenuHandler(MetalService metalService, ReceptionService receptionService,
-                            ConsoleInputReader inputReader) {
+    public MetalMenuHandler(MetalService metalService,  ConsoleInputReader inputReader) {
         this.metalService = metalService;
-        this.receptionService = receptionService;
         this.inputReader = inputReader;
     }
 
@@ -31,7 +31,7 @@ public class MetalMenuHandler {
         try {
             Metal metal = metalService.addMetal(name, pricePerKg);
             System.out.println("Металл добавлен: " + metal);
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
@@ -57,20 +57,12 @@ public class MetalMenuHandler {
         System.out.println("Введите id металла для удаления: ");
         int metalId = inputReader.readInt();
 
-        Optional<Metal> metalResult = metalService.findById(metalId);
-        if (metalResult.isEmpty()) {
-            System.out.println("Металл с id=" + metalId + " не найден.");
-            return;
+        try {
+            metalService.deleteMetal(metalId);
+            System.out.println("Металл с id=" + metalId + " удалён.");
+        } catch (MetalNotFoundException | MetalInUseException e) {
+            System.out.println(e.getMessage());
         }
-
-        List<Reception> metalReceptions = receptionService.findByMetalId(metalId);
-        if (!metalReceptions.isEmpty()) {
-            System.out.println("Нельзя удалить металл: у него есть " + metalReceptions.size() + " история.");
-            return;
-        }
-
-        metalService.deleteById(metalId);
-        System.out.println("Металл с id=" + metalId + " удалён.");
     }
 
     public void editMetal() {
@@ -80,12 +72,13 @@ public class MetalMenuHandler {
         System.out.println("Введите id для изменения: ");
         int metalId = inputReader.readInt();
 
-        Optional<Metal> metalResult = metalService.findById(metalId);
-        if (metalResult.isEmpty()) {
-            System.out.println("Металл с таким id=" + metalId + " не найден.");
+        Metal metal;
+        try {
+            metal = metalService.getByIdOrThrow(metalId);
+        } catch (MetalNotFoundException e) {
+            System.out.println(e.getMessage());
             return;
         }
-        Metal metal = metalResult.get();
 
         System.out.println("Текущее наименование: " + metal.getName());
         System.out.println("Введите новое название (или оставьте пустым чтобы не менять):");
@@ -93,19 +86,18 @@ public class MetalMenuHandler {
 
         System.out.println("Текущая цена за кг: " + metal.getPricePerKg());
         System.out.println("Хотите изменить цену? (да/нет): ");
-        String answer = inputReader.readLine();
+        Boolean changePrice = inputReader.readYesNo();
+
+        BigDecimal newPrice = null;
+        if (changePrice) {
+            System.out.println("Введите цену за кг: ");
+            newPrice = inputReader.readBigDecimal();
+        }
 
         try {
-            if (!newName.isBlank()) {
-                metal.setName(newName);
-            }
-            if (answer.equalsIgnoreCase("да")) {
-                System.out.println("Введите новую цену за кг: ");
-                BigDecimal newPrice = inputReader.readBigDecimal();
-                metal.setPricePerKg(newPrice);
-            }
-            System.out.println("Металл изменён: " + metal);
-        } catch (IllegalArgumentException e) {
+            Metal updated = metalService.updateMetal(metalId, newName, newPrice);
+            System.out.println("Металл изменён " + updated);
+        } catch (ValidationException e) {
             System.out.println("Ошибка " + e.getMessage());
         }
     }
@@ -113,6 +105,10 @@ public class MetalMenuHandler {
     public void searchMetalByName() {
         System.out.println("Введите часть названия металла: ");
         String namePart = inputReader.readLine();
+
+        if (namePart.isBlank()) {
+            System.out.println("Строка поиска не может быть пустой.");
+        }
 
         List<Metal> found = metalService.findByName(namePart);
         if (found.isEmpty()) {

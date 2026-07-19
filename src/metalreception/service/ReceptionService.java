@@ -1,5 +1,6 @@
 package metalreception.service;
 
+import metalreception.exception.notfound.ReceptionNotFoundException;
 import metalreception.model.Client;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ReceptionService {
+public class ReceptionService implements UsageChecker {
     private final List<Reception> receptions = new ArrayList<>();
     private int nextId = 1;
 
@@ -36,6 +37,10 @@ public class ReceptionService {
         return Optional.empty();
     }
 
+    public Reception getByIdOrThrow(int id) {
+        return findById(id).orElseThrow(() -> new ReceptionNotFoundException("Приёмка с id=" + id + " не найдена."));
+    }
+
     public List<Reception> findByClientId(int clientId) {
         List<Reception> result = new ArrayList<>();
         for (Reception reception : receptions) {
@@ -54,5 +59,21 @@ public class ReceptionService {
             }
         }
         return result;
+    }
+
+    public Reception updateReceptionWeight(int id, BigDecimal newWeight) {
+        Reception reception = getByIdOrThrow(id);
+        reception.setWeight(newWeight);
+        return reception;
+    }
+
+    @Override
+    public boolean isClientInUse(int clientId) {
+        return !findByClientId(clientId).isEmpty();
+    }
+
+    @Override
+    public boolean isMetalInUse(int metalId) {
+        return !findByMetalId(metalId).isEmpty();
     }
 }

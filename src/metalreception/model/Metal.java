@@ -1,5 +1,9 @@
 package metalreception.model;
 
+import metalreception.exception.validation.InvalidIdException;
+import metalreception.exception.validation.InvalidNameException;
+import metalreception.exception.validation.InvalidPriceException;
+
 import java.math.BigDecimal;
 
 public class Metal {
@@ -9,13 +13,13 @@ public class Metal {
 
     public Metal(int id, String name, BigDecimal pricePerKg) {
         if (id <= 0) {
-            throw new IllegalArgumentException("ID металла должен быть больше нуля.");
+            throw new InvalidIdException("ID металла должен быть больше нуля.");
         }
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Наименование металла не может быть пустым.");
+            throw new InvalidNameException("Наименование металла не может быть пустым.");
         }
         if (pricePerKg == null || pricePerKg.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Цена за кг должна быть больше нуля.");
+            throw new InvalidPriceException("Цена за кг должна быть больше нуля.");
         }
         this.id = id;
         this.name = name.strip();
@@ -36,14 +40,14 @@ public class Metal {
 
     public void setName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Наименование металла не может быть пустым.");
+            throw new InvalidNameException("Наименование металла не может быть пустым.");
         }
         this.name = name.strip();
     }
 
     public void setPricePerKg(BigDecimal pricePerKg) {
         if (pricePerKg == null || pricePerKg.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Цена за кг должна быть больше нуля.");
+            throw new InvalidPriceException("Цена за кг должна быть больше нуля.");
         }
         this.pricePerKg = pricePerKg;
     }

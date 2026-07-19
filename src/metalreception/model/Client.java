@@ -1,5 +1,9 @@
 package metalreception.model;
 
+import metalreception.exception.validation.InvalidIdException;
+import metalreception.exception.validation.InvalidNameException;
+import metalreception.exception.validation.InvalidPhoneException;
+
 public class Client {
     private final int id;
     private String name;
@@ -7,13 +11,13 @@ public class Client {
 
     public Client(int id, String name, String phone) {
         if (id <= 0) {
-            throw new IllegalArgumentException("ID клиента должен быть больше нуля.");
+            throw new InvalidIdException("ID клиента должен быть больше нуля.");
         }
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Имя клиента не может быть пустым");
+            throw new InvalidNameException("Имя клиента не может быть пустым");
         }
         if (phone != null && phone.isBlank()) {
-            throw new IllegalArgumentException("Телефон, если указан, не может быть пустой строкой.");
+            throw new InvalidPhoneException("Телефон, если указан, не может быть пустой строкой.");
         }
         this.id = id;
         this.name = name.strip();
@@ -25,13 +29,13 @@ public class Client {
     public String getPhone() { return phone; }
     public void setName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Имя не может быть null.");
+            throw new InvalidNameException("Имя не может быть null.");
         }
         this.name = name.strip();
     }
     public void setPhone(String phone) {
         if (phone != null && phone.isBlank()) {
-            throw new IllegalArgumentException("Телефон, если указан, не может быть пустой строкой.");
+            throw new InvalidPhoneException("Телефон, если указан, не может быть пустой строкой.");
         }
         this.phone = phone == null ? null : phone.strip();
     }

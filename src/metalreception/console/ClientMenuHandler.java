@@ -1,5 +1,8 @@
 package metalreception.console;
 
+import metalreception.exception.business.ClientInUseException;
+import metalreception.exception.notfound.ClientNotFoundException;
+import metalreception.exception.validation.ValidationException;
 import metalreception.model.Client;
 import metalreception.model.Reception;
 import metalreception.service.ClientService;
@@ -10,13 +13,10 @@ import java.util.Optional;
 
 public class ClientMenuHandler {
     private final ClientService clientService;
-    private final ReceptionService receptionService;
     private final ConsoleInputReader inputReader;
 
-    public ClientMenuHandler(ClientService clientService, ReceptionService receptionService,
-                             ConsoleInputReader inputReader)  {
+    public ClientMenuHandler(ClientService clientService, ConsoleInputReader inputReader)  {
         this.clientService = clientService;
-        this.receptionService = receptionService;
         this.inputReader = inputReader;
 
     }
@@ -34,7 +34,7 @@ public class ClientMenuHandler {
         try {
             Client client = clientService.addClient(name, phone);
             System.out.println("Клиент добавлен: " + client);
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
@@ -60,21 +60,12 @@ public class ClientMenuHandler {
         System.out.println("Введите id клиента для удаления: ");
         int clientId = inputReader.readInt();
 
-        Optional<Client> clientResult = clientService.findById(clientId);
-        if (clientResult.isEmpty()) {
-            System.out.println("Клиент с id=" + clientId + " не найден.");
-            return;
+        try {
+            clientService.deleteClient(clientId);
+            System.out.println("Клиент с id=" + clientId + " удалён.");
+        } catch (ClientNotFoundException | ClientInUseException e) {
+            System.out.println(e.getMessage());
         }
-
-        List<Reception> clientReceptions = receptionService.findByClientId(clientId);
-        if (!clientReceptions.isEmpty()) {
-            System.out.println("Нельзя удалить клиента: у него есть     " + clientReceptions.size()
-                    + " приёмка(и) в истории.");
-            return;
-        }
-
-        clientService.deleteById(clientId);
-        System.out.println("Клиент с id=" + clientId + " удалён.");
     }
 
     public void editClient() {
@@ -84,29 +75,28 @@ public class ClientMenuHandler {
         System.out.println("Введите id для изменения: ");
         int clientId = inputReader.readInt();
 
-        Optional<Client> clientResult = clientService.findById(clientId);
-        if (clientResult.isEmpty()) {
-            System.out.println("Клиент с таким id=" + clientId + " не найден.");
-            return;
-        }
-        Client client = clientResult.get();
+       Client client;
+       try {
+           client = clientService.getByIdOrThrow(clientId);
+       } catch (ClientNotFoundException e) {
+           System.out.println(e.getMessage());
+           return;
+       }
 
         System.out.println("Текущее имя: " + client.getName());
         System.out.println("Введите новое имя (или оставьте пустым чтобы не менять): ");
         String newName = inputReader.readLine();
+
         System.out.println("Текущий телефон: " + (client.getPhone() == null ? "не указан" : client.getPhone()));
-        System.out.println("Введите новый телефон (или оставьте пустым чтобы не менять): ");
-        String newPhone = inputReader.readLine();
+        System.out.println("Введите новый телефон, 'очистить' чтобы удалить телефон, \" +\n" +
+                "                \"или оставьте пустым, чтобы не менять: ");
+        String phoneInput = inputReader.readLine();
+        boolean clearPhone = phoneInput.equalsIgnoreCase("очистить");
 
         try {
-            if (!newName.isBlank()) {
-                client.setName(newName);
-            }
-            if (!newPhone.isBlank()) {
-                client.setPhone(newPhone);
-            }
-            System.out.println("Клиент изменён: " + client);
-        } catch (IllegalArgumentException e) {
+            Client updated = clientService.updateClient(clientId, newName, clearPhone ? null : phoneInput, clearPhone);
+            System.out.println("Клиент изменен: " + updated);
+        } catch (ValidationException e) {
             System.out.println("Ошибка " + e.getMessage());
         }
     }
@@ -114,6 +104,11 @@ public class ClientMenuHandler {
     public void searchClientByName() {
         System.out.println("Введите часть имени клиента: ");
         String namePart = inputReader.readLine();
+
+        if (namePart.isBlank()) {
+            System.out.println("Строка поиска не может быть пустой.");
+            return;
+        }
 
         List<Client> found = clientService.findByName(namePart);
         if (found.isEmpty()) {

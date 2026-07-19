@@ -1,5 +1,9 @@
 package metalreception.console;
 
+import metalreception.exception.notfound.ClientNotFoundException;
+import metalreception.exception.notfound.MetalNotFoundException;
+import metalreception.exception.notfound.ReceptionNotFoundException;
+import metalreception.exception.validation.ValidationException;
 import metalreception.model.Client;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
@@ -9,73 +13,90 @@ import metalreception.service.ReceptionService;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 public class ReceptionMenuHandler {
     private final ReceptionService receptionService;
     private final ConsoleInputReader inputReader;
     private final MetalService metalService;
     private final ClientService clientService;
-    private final ClientMenuHandler clientMenuHandler;
-    private final MetalMenuHandler metalMenuHandler;
 
     public ReceptionMenuHandler(ReceptionService receptionService, ConsoleInputReader inputReader,
-                                MetalService metalService, ClientService clientService, ClientMenuHandler clientMenuHandler,
-                                MetalMenuHandler metalMenuHandler) {
+                                MetalService metalService, ClientService clientService) {
         this.receptionService = receptionService;
         this.inputReader = inputReader;
         this.metalService = metalService;
         this.clientService = clientService;
-        this.clientMenuHandler = clientMenuHandler;
-        this.metalMenuHandler = metalMenuHandler;
     }
 
     public void createReception() {
-        if (clientService.getAllClients().isEmpty()) {
+        List<Client> clients = clientService.getAllClients();
+        if (clients.isEmpty()) {
             System.out.println("Сначала добавьте хотя бы одного клиента.");
             return;
         }
-        if (metalService.getAllMetals().isEmpty()) {
+        List<Metal> metals = metalService.getAllMetals();
+        if (metals.isEmpty()) {
             System.out.println("Сначала добавьте хотя бы один металл.");
             return;
         }
-        clientMenuHandler.showAllClients();
+        printClients(clients);
         System.out.println();
-
         System.out.println("Введите id клиента: ");
         int clientId = inputReader.readInt();
 
-        Optional<Client> clientResult = clientService.findById(clientId);
-        if (clientResult.isEmpty()) {
-            System.out.println("Клиент с id=" + clientId + " не найден.");
+        Client client;
+        try {
+            client = clientService.getByIdOrThrow(clientId);
+        } catch (ClientNotFoundException e) {
+            System.out.println(e.getMessage());
             return;
         }
-        Client client = clientResult.get();
 
-        metalMenuHandler.showAllMetals();
+        printMetals(metals);
         System.out.println();
-
         System.out.println("Введите id металла: ");
         int metalId = inputReader.readInt();
 
-        Optional<Metal> metalResult = metalService.findById(metalId);
-        if (metalResult.isEmpty()) {
-            System.out.println("Металл с id=" + metalId + " не найден.");
+        Metal metal;
+        try {
+            metal = metalService.getByIdOrThrow(metalId);
+        } catch (MetalNotFoundException e) {
+            System.out.println(e.getMessage());
             return;
         }
-        Metal metal = metalResult.get();
 
-        System.out.println("Введите вес(кг): ");
+        System.out.println("Введите вес (кг): ");
         BigDecimal weight = inputReader.readBigDecimal();
 
         try {
             Reception reception = receptionService.createReception(client, metal, weight);
-            System.out.println("Приёмка создана: " + reception);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Ошибка: " + e.getMessage());
+            System.out.println("Приёмка создана " + reception);
+        } catch (ValidationException e) {
+            System.out.println("Ошибка " + e.getMessage());
         }
     }
 
+    public void printClients(List<Client> clients) {
+        if (clients.isEmpty()) {
+            System.out.println("Клиентов пока нет.");
+            return;
+        }
+        System.out.println("\n======== Список клиентов ========");
+        for (Client client : clients) {
+            System.out.println(client);
+        }
+    }
+
+    public void printMetals(List<Metal> metals) {
+        if (metals.isEmpty()) {
+            System.out.println("Клиентов пока нет.");
+            return;
+        }
+        System.out.println("\n======== Список металлов ========");
+        for (Metal metal : metals) {
+            System.out.println(metal);
+        }
+    }
 
     public void showAllReceptions() {
         List<Reception> receptions = receptionService.getAllReceptions();
@@ -98,35 +119,37 @@ public class ReceptionMenuHandler {
         System.out.println("Введите id приёмки для изменения: ");
         int receptionId = inputReader.readInt();
 
-        Optional<Reception> receptionResult = receptionService.findById(receptionId);
-        if (receptionResult.isEmpty()) {
-            System.out.println("Приёмка с таким id=" + receptionId + " не найден.");
+        try {
+            receptionService.getByIdOrThrow(receptionId);
+        } catch (ReceptionNotFoundException e) {
+            System.out.println(e.getMessage());
             return;
         }
-        Reception reception = receptionResult.get();
 
-        System.out.println("Текущий вес: " + reception.getWeight());
+        Reception current = receptionService.getByIdOrThrow(receptionId);
+        System.out.println("Текущий вес: " + current.getWeight());
         System.out.println("Введите новый вес приёмки: ");
         BigDecimal newWeight = inputReader.readBigDecimal();
 
         try {
-            reception.setWeight(newWeight);
-            System.out.println("Приёмка изменена: " + reception);
-        } catch (IllegalArgumentException e) {
+            Reception updated = receptionService.updateReceptionWeight(receptionId, newWeight);
+            System.out.println("Приёмка изменена: " + updated);
+        } catch (ValidationException e) {
             System.out.println("Ошибка " + e.getMessage());
         }
     }
 
     public void searchReceptionByClient() {
-        clientMenuHandler.showAllClients();
+        printClients(clientService.getAllClients());
         System.out.println();
 
         System.out.println("Введите id клиента: ");
         int clientId = inputReader.readInt();
 
-        Optional<Client> clientResult = clientService.findById(clientId);
-        if (clientResult.isEmpty()) {
-            System.out.println("Клиент с id=" + clientId + " не найден.");
+        try {
+            clientService.getByIdOrThrow(clientId);
+        } catch (ClientNotFoundException e) {
+            System.out.println(e.getMessage());
             return;
         }
 

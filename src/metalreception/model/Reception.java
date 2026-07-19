@@ -1,5 +1,9 @@
 package metalreception.model;
 
+import metalreception.exception.validation.InvalidIdException;
+import metalreception.exception.validation.InvalidReceptionDataException;
+import metalreception.exception.validation.InvalidWeightException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -14,19 +18,19 @@ public class Reception {
 
     public Reception(int id, Client client, Metal metal, BigDecimal weight, LocalDate date) {
         if (id <= 0) {
-            throw new IllegalArgumentException("ID приёма металла должен быть больше нуля.");
+            throw new InvalidIdException("ID приёма металла должен быть больше нуля.");
         }
         if (client == null) {
-            throw new IllegalArgumentException("Клиент не может быть null.");
+            throw new InvalidReceptionDataException("Клиент не может быть null.");
         }
         if (metal == null) {
-            throw new IllegalArgumentException("Металл не может быть null.");
+            throw new InvalidReceptionDataException("Металл не может быть null.");
         }
         if (weight == null || weight.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Вес должен быть больше нуля.");
+            throw new InvalidWeightException("Вес должен быть больше нуля.");
         }
         if (date == null) {
-            throw new IllegalArgumentException("Дата приёма металла не может быть null");
+            throw new InvalidReceptionDataException("Дата приёма металла не может быть null");
         }
         this.id = id;
         this.client = client;
@@ -47,7 +51,7 @@ public class Reception {
 
     public void setWeight(BigDecimal weight) {
         if (weight == null || weight.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Вес должен быть больше нуля.");
+            throw new InvalidWeightException("Вес должен быть больше нуля.");
         }
         this.weight = weight;
         this.totalPrice = weight.multiply(pricePerKgAtReception);
