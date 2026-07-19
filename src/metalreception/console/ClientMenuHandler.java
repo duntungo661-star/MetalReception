@@ -85,8 +85,8 @@ public class ClientMenuHandler {
         String newName = inputReader.readLine();
 
         System.out.println("Текущий телефон: " + (client.getPhone() == null ? "не указан" : client.getPhone()));
-        System.out.println("Введите новый телефон, 'очистить' чтобы удалить телефон, \" +\n" +
-                "                \"или оставьте пустым, чтобы не менять: ");
+        System.out.println("Введите новый телефон, 'очистить' чтобы удалить телефон, "  +
+                               "или оставьте пустым, чтобы не менять: ");
         String phoneInput = inputReader.readLine();
         boolean clearPhone = phoneInput.equalsIgnoreCase("очистить");
 

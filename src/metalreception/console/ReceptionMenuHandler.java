@@ -119,14 +119,14 @@ public class ReceptionMenuHandler {
         System.out.println("Введите id приёмки для изменения: ");
         int receptionId = inputReader.readInt();
 
+        Reception current;
         try {
-            receptionService.getByIdOrThrow(receptionId);
+            current = receptionService.getByIdOrThrow(receptionId);
         } catch (ReceptionNotFoundException e) {
             System.out.println(e.getMessage());
             return;
         }
 
-        Reception current = receptionService.getByIdOrThrow(receptionId);
         System.out.println("Текущий вес: " + current.getWeight());
         System.out.println("Введите новый вес приёмки: ");
         BigDecimal newWeight = inputReader.readBigDecimal();

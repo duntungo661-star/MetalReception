@@ -69,5 +69,6 @@ public class ClientService {
         if (usageChecker.isClientInUse(id)) {
             throw new ClientInUseException("Нельзя удалить клиента с id=" + id + " он есть в истории приёмок.");
         }
+        clients.removeIf(client -> client.getId() == id);
     }
 }

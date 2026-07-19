@@ -105,6 +105,7 @@ public class MetalMenuHandler {
 
         if (namePart.isBlank()) {
             System.out.println("Строка поиска не может быть пустой.");
+            return;
         }
 
         List<Metal> found = metalService.findByName(namePart);
