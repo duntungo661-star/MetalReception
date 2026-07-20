@@ -31,3 +31,4 @@ bin/
 out/
 .idea/
 *.iml
+target/
