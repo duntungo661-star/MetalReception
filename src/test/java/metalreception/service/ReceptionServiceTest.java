@@ -66,7 +66,7 @@ class ReceptionServiceTest {
         List<Reception> found = receptionService.findByClientId(client.getId());
 
         assertEquals(1, found.size());
-        assertEquals(client.getId(), found.get(0).getClient().getId());
+        assertEquals(client.getId(), found.getFirst().getClient().getId());
     }
 
     @Test
@@ -79,7 +79,7 @@ class ReceptionServiceTest {
         List<Reception> found = receptionService.findByMetalId(metal.getId());
 
         assertEquals(1, found.size());
-        assertEquals(metal.getId(), found.get(0).getMetal().getId());
+        assertEquals(metal.getId(), found.getFirst().getMetal().getId());
     }
 
     @Test
@@ -117,7 +117,7 @@ class ReceptionServiceTest {
         );
 
         assertEquals(new BigDecimal("20"), updated.getWeight());
-        assertEquals(new BigDecimal("1000"), updated.getTotalPrice());
+        assertEquals(new BigDecimal("1000.00"), updated.getTotalPrice());
     }
 
     @Test

@@ -29,7 +29,7 @@ class ReceptionTest {
         );
 
         // 10 кг * 50 за кг = 500
-        assertEquals(new BigDecimal("500"), reception.getTotalPrice());
+        assertEquals(new BigDecimal("500.00"), reception.getTotalPrice());
     }
 
     @Test
@@ -38,12 +38,10 @@ class ReceptionTest {
                 1, client, metal, new BigDecimal("10"), LocalDate.now()
         );
 
-        // цена металла меняется ПОСЛЕ создания приёмки
         metal.setPricePerKg(new BigDecimal("100"));
 
-        // но зафиксированная в приёмке цена не должна измениться
         assertEquals(new BigDecimal("50"), reception.getPricePerKgAtReception());
-        assertEquals(new BigDecimal("500"), reception.getTotalPrice());
+        assertEquals(new BigDecimal("500.00"), reception.getTotalPrice());
     }
 
     @Test
@@ -82,7 +80,7 @@ class ReceptionTest {
 
         assertEquals(new BigDecimal("20"), reception.getWeight());
         // 20 кг * 50 (историческая цена, не текущая) = 1000
-        assertEquals(new BigDecimal("1000"), reception.getTotalPrice());
+        assertEquals(new BigDecimal("1000.00"), reception.getTotalPrice());
     }
 
     @Test
@@ -95,11 +93,11 @@ class ReceptionTest {
 
         assertEquals(1, reception.getChanges().size());
 
-        ReceptionChange change = reception.getChanges().get(0);
+        ReceptionChange change = reception.getChanges().getFirst();
         assertEquals(new BigDecimal("10"), change.getOldWeight());
         assertEquals(new BigDecimal("20"), change.getNewWeight());
-        assertEquals(new BigDecimal("500"), change.getOldTotalPrice());
-        assertEquals(new BigDecimal("1000"), change.getNewTotalPrice());
+        assertEquals(new BigDecimal("500.00"), change.getOldTotalPrice());
+        assertEquals(new BigDecimal("1000.00"), change.getNewTotalPrice());
         assertEquals("Ошибка при взвешивании", change.getReason());
     }
 
@@ -134,5 +132,23 @@ class ReceptionTest {
 
         // внутренний список не должен пострадать
         assertEquals(1, reception.getChanges().size());
+    }
+
+    @Test
+    void shouldRoundTotalPriceToTwoDecimalPlaces() {
+        Metal priceseMetal = new Metal(1, "Медь", new BigDecimal("87.333"));
+        Reception reception = new Reception(1, client, priceseMetal, new BigDecimal("12.345"), LocalDate.now());
+
+        assertEquals(new BigDecimal("1078.13"), reception.getTotalPrice());
+    }
+
+    @Test
+    void  correctWeightShouldAlsoRoundNewTotalPrice() {
+        Metal pricesMetal = new Metal(1, "Медь", new BigDecimal("87.333"));
+        Reception reception = new Reception(1, client, pricesMetal, new BigDecimal("10"), LocalDate.now());
+
+        reception.correctWeight(new BigDecimal("12.345"), "Пересчет веса");
+
+        assertEquals(new BigDecimal("1078.13"), reception.getTotalPrice());
     }
 }

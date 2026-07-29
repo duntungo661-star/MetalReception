@@ -6,11 +6,14 @@ import metalreception.exception.validation.InvalidReceptionDataException;
 import metalreception.exception.validation.InvalidWeightException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Reception {
+
+    private static final int MONEY_SCALE = 2;
 
     private final int id;
     private final Client client;
@@ -159,7 +162,7 @@ public class Reception {
     }
 
     private BigDecimal calculateTotalPrice(BigDecimal weight) {
-        return weight.multiply(pricePerKgAtReception);
+        return weight.multiply(pricePerKgAtReception).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
     @Override
