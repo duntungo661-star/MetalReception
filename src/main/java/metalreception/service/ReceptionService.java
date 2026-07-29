@@ -1,9 +1,10 @@
-package main.java.metalreception.service;
+package metalreception.service;
 
-import main.java.metalreception.exception.notfound.ReceptionNotFoundException;
-import main.java.metalreception.model.Client;
-import main.java.metalreception.model.Metal;
-import main.java.metalreception.model.Reception;
+import metalreception.exception.notfound.ReceptionNotFoundException;
+import metalreception.model.Client;
+import metalreception.model.Metal;
+import metalreception.model.Reception;
+import metalreception.model.ReceptionChange;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,15 +13,27 @@ import java.util.List;
 import java.util.Optional;
 
 public class ReceptionService implements UsageChecker {
+
     private final List<Reception> receptions = new ArrayList<>();
+
     private int nextId = 1;
 
-    public Reception createReception(Client client, Metal metal, BigDecimal weight) {
+    public Reception createReception(
+            Client client,
+            Metal metal,
+            BigDecimal weight
+    ) {
         Reception reception = new Reception(
-                nextId, client, metal, weight, LocalDate.now()
+                nextId,
+                client,
+                metal,
+                weight,
+                LocalDate.now()
         );
+
         receptions.add(reception);
         nextId++;
+
         return reception;
     }
 
@@ -34,37 +47,56 @@ public class ReceptionService implements UsageChecker {
                 return Optional.of(reception);
             }
         }
+
         return Optional.empty();
     }
 
     public Reception getByIdOrThrow(int id) {
-        return findById(id).orElseThrow(() -> new ReceptionNotFoundException("Приёмка с id=" + id + " не найдена."));
+        return findById(id)
+                .orElseThrow(() -> new ReceptionNotFoundException(
+                        "Приёмка с id=" + id + " не найдена."
+                ));
     }
 
     public List<Reception> findByClientId(int clientId) {
         List<Reception> result = new ArrayList<>();
+
         for (Reception reception : receptions) {
             if (reception.getClient().getId() == clientId) {
                 result.add(reception);
             }
         }
+
         return result;
     }
 
     public List<Reception> findByMetalId(int metalId) {
         List<Reception> result = new ArrayList<>();
+
         for (Reception reception : receptions) {
             if (reception.getMetal().getId() == metalId) {
                 result.add(reception);
             }
         }
+
         return result;
     }
 
-    public Reception updateReceptionWeight(int id, BigDecimal newWeight) {
-        Reception reception = getByIdOrThrow(id);
-        reception.setWeight(newWeight);
+    public Reception correctReceptionWeight(
+            int receptionId,
+            BigDecimal newWeight,
+            String reason
+    ) {
+        Reception reception = getByIdOrThrow(receptionId);
+
+        reception.correctWeight(newWeight, reason);
+
         return reception;
+    }
+
+    public List<ReceptionChange> getReceptionChanges(int receptionId) {
+        Reception reception = getByIdOrThrow(receptionId);
+        return reception.getChanges();
     }
 
     @Override

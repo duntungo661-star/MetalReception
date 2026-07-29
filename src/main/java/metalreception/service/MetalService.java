@@ -1,21 +1,30 @@
-package main.java.metalreception.service;
+package metalreception.service;
 
-import main.java.metalreception.exception.business.MetalInUseException;
-import main.java.metalreception.exception.notfound.MetalNotFoundException;
-import main.java.metalreception.model.Metal;
+import metalreception.exception.business.MetalInUseException;
+import metalreception.exception.notfound.MetalNotFoundException;
+import metalreception.exception.validation.InvalidNameException;
+import metalreception.model.Metal;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class MetalService {
 
     private final List<Metal> metals = new ArrayList<>();
-    private int nextId = 1;
     private final UsageChecker usageChecker;
 
+    private int nextId = 1;
+
     public MetalService(UsageChecker usageChecker) {
+        if (usageChecker == null) {
+            throw new IllegalArgumentException(
+                    "UsageChecker не может быть null."
+            );
+        }
+
         this.usageChecker = usageChecker;
     }
 
@@ -25,6 +34,7 @@ public class MetalService {
         nextId++;
         return metal;
     }
+
     public List<Metal> getAllMetals() {
         return new ArrayList<>(metals);
     }
@@ -38,19 +48,35 @@ public class MetalService {
         return Optional.empty();
     }
 
+    public Metal getByIdOrThrow(int id) {
+        return findById(id)
+                .orElseThrow(() -> new MetalNotFoundException(
+                        "Металл с id=" + id + " не найден."
+                ));
+    }
+
     public List<Metal> findByName(String namePart) {
+        if (namePart == null || namePart.isBlank()) {
+            throw new InvalidNameException(
+                    "Строка поиска металла не может быть пустой."
+            );
+        }
+
+        String normalizedNamePart =
+                namePart.strip().toLowerCase(Locale.ROOT);
+
         List<Metal> result = new ArrayList<>();
+
         for (Metal metal : metals) {
-            if (metal.getName().toLowerCase().contains(namePart.toLowerCase()))
-            {
+            String metalName =
+                    metal.getName().toLowerCase(Locale.ROOT);
+
+            if (metalName.contains(normalizedNamePart)) {
                 result.add(metal);
             }
         }
-        return result;
-    }
 
-    public Metal getByIdOrThrow(int id) {
-        return findById(id).orElseThrow(() -> new MetalNotFoundException("Металл с id=" + id + " не найден."));
+        return result;
     }
 
     public Metal updateMetal(int id, String newName, BigDecimal newPrice) {
@@ -65,10 +91,15 @@ public class MetalService {
     }
 
     public void deleteMetal(int id) {
-        getByIdOrThrow(id);
+        Metal metal = getByIdOrThrow(id);
+
         if (usageChecker.isMetalInUse(id)) {
-            throw new MetalInUseException("Нельзя удалить металл с id=" + id + ": он есть в истории приёмок.");
+            throw new MetalInUseException(
+                    "Нельзя удалить металл с id=" + id +
+                            ": он есть в истории приёмок."
+            );
         }
-        metals.removeIf(metal -> metal.getId() == id);
+
+        metals.remove(metal);
     }
 }

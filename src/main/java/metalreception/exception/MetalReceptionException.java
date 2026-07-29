@@ -1,4 +1,4 @@
-package main.java.metalreception.exception;
+package metalreception.exception;
 
 public class MetalReceptionException extends RuntimeException {
     public MetalReceptionException(String message) {

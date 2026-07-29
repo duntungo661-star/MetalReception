@@ -1,4 +1,4 @@
-package main.java.metalreception.exception.notfound;
+package metalreception.exception.notfound;
 
 public class MetalNotFoundException extends NotFoundException {
     public MetalNotFoundException(String message) {

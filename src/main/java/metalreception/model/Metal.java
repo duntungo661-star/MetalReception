@@ -1,26 +1,22 @@
-package main.java.metalreception.model;
+package metalreception.model;
 
-import main.java.metalreception.exception.validation.InvalidIdException;
-import main.java.metalreception.exception.validation.InvalidNameException;
-import main.java.metalreception.exception.validation.InvalidPriceException;
+import metalreception.exception.validation.InvalidIdException;
+import metalreception.exception.validation.InvalidNameException;
+import metalreception.exception.validation.InvalidPriceException;
 
 import java.math.BigDecimal;
 
 public class Metal {
+
     private final int id;
     private String name;
     private BigDecimal pricePerKg;
 
     public Metal(int id, String name, BigDecimal pricePerKg) {
-        if (id <= 0) {
-            throw new InvalidIdException("ID металла должен быть больше нуля.");
-        }
-        if (name == null || name.isBlank()) {
-            throw new InvalidNameException("Наименование металла не может быть пустым.");
-        }
-        if (pricePerKg == null || pricePerKg.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidPriceException("Цена за кг должна быть больше нуля.");
-        }
+        validateId(id);
+        validateName(name);
+        validatePrice(pricePerKg);
+
         this.id = id;
         this.name = name.strip();
         this.pricePerKg = pricePerKg;
@@ -39,21 +35,47 @@ public class Metal {
     }
 
     public void setName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new InvalidNameException("Наименование металла не может быть пустым.");
-        }
+        validateName(name);
         this.name = name.strip();
     }
 
     public void setPricePerKg(BigDecimal pricePerKg) {
-        if (pricePerKg == null || pricePerKg.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidPriceException("Цена за кг должна быть больше нуля.");
-        }
+        validatePrice(pricePerKg);
         this.pricePerKg = pricePerKg;
+    }
+
+    private void validateId(int id) {
+        if (id <= 0) {
+            throw new InvalidIdException(
+                    "ID металла должен быть больше нуля."
+            );
+        }
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new InvalidNameException(
+                    "Наименование металла не может быть пустым."
+            );
+        }
+    }
+
+    private void validatePrice(BigDecimal pricePerKg) {
+        if (pricePerKg == null ||
+                pricePerKg.compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new InvalidPriceException(
+                    "Цена за кг должна быть больше нуля."
+            );
+        }
     }
 
     @Override
     public String toString() {
-        return "Metal{id=" + id + ", name='" + name + "', pricePerKg=" + pricePerKg + "}";
+        return "Metal{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", pricePerKg=" + pricePerKg +
+                '}';
     }
 }

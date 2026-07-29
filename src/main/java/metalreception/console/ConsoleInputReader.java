@@ -1,32 +1,49 @@
-package main.java.metalreception.console;
+package metalreception.console;
 
 import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class ConsoleInputReader {
-    private final Scanner scanner = new Scanner(System.in);
+
+    private final Scanner scanner;
+
+    public ConsoleInputReader() {
+        this.scanner = new Scanner(System.in);
+    }
 
     public int readInt() {
-        while (!scanner.hasNextInt()) {
-            System.out.println("Введите число: ");
-            scanner.next();
+        while (true) {
+            String input = scanner.nextLine().strip();
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println(
+                        "Некорректный формат. Введите целое число:"
+                );
+            }
         }
-        int value = scanner.nextInt();
-        scanner.nextLine();
-        return value;
     }
 
     public BigDecimal readBigDecimal() {
         while (true) {
             String input = scanner.nextLine().strip();
+            input = input.replace(',', '.');
+
             try {
                 BigDecimal value = new BigDecimal(input);
+
                 if (value.compareTo(BigDecimal.ZERO) > 0) {
                     return value;
                 }
-                System.out.println("Число должно быть положительным. Попробуйте снова: ");
+
+                System.out.println(
+                        "Число должно быть больше нуля. Попробуйте снова:"
+                );
             } catch (NumberFormatException e) {
-                System.out.println("Некорректный формат числа. Введите число (например 32.3): ");
+                System.out.println(
+                        "Некорректный формат числа. Например: 32.3"
+                );
             }
         }
     }
@@ -36,15 +53,24 @@ public class ConsoleInputReader {
     }
 
     public boolean readYesNo() {
-        while(true) {
-            String input = readLine().toLowerCase();
-            if (input.equals("да")) {
+        while (true) {
+            String input = readLine();
+
+            if (input.equalsIgnoreCase("да")) {
                 return true;
             }
-            if (input.equals("нет")) {
+
+            if (input.equalsIgnoreCase("нет")) {
                 return false;
             }
-            System.out.println("Пожалуйста, введите 'да' или 'нет': ");
+
+            System.out.println(
+                    "Пожалуйста, введите «да» или «нет»:"
+            );
         }
+    }
+
+    public void close() {
+        scanner.close();
     }
 }

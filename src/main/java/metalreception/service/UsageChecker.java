@@ -1,4 +1,4 @@
-package main.java.metalreception.service;
+package metalreception.service;
 
 public interface UsageChecker {
     boolean isClientInUse(int clientId);
