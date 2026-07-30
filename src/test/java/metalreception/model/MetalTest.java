@@ -24,7 +24,10 @@ class MetalTest {
     void shouldThrowExceptionWhenIdIsZeroOrNegative() {
         assertThrows(InvalidIdException.class,
                 () -> new Metal(0, "Железо", new BigDecimal("10")));
+        assertThrows(InvalidIdException.class,
+                () -> new Metal(-1, "Железо", new BigDecimal("10")));
     }
+
 
     @Test
     void shouldThrowExceptionWhenNameIsBlank() {

@@ -55,26 +55,15 @@ class MetalServiceTest {
         List<Metal> found = metalService.findByName("ЖЕЛЕЗ");
 
         assertEquals(1, found.size());
-        assertEquals("Железо", found.get(0).getName());
+        assertEquals("Железо", found.getFirst().getName());
     }
 
     @Test
     void findByNameShouldThrowExceptionWhenSearchStringIsBlank() {
-        // Проверка бага: пустая строка поиска не должна возвращать всё подряд
         assertThrows(InvalidNameException.class,
                 () -> metalService.findByName(""));
         assertThrows(InvalidNameException.class,
                 () -> metalService.findByName("   "));
-    }
-
-    @Test
-    void findByNameShouldNotReturnAllMetalsForBlankQuery() {
-        metalService.addMetal("Железо", new BigDecimal("50"));
-        metalService.addMetal("Медь", new BigDecimal("300"));
-
-        // раньше здесь возвращались бы все металлы — теперь должно быть исключение
-        assertThrows(InvalidNameException.class,
-                () -> metalService.findByName(""));
     }
 
     @Test
@@ -120,5 +109,32 @@ class MetalServiceTest {
                 () -> metalService.deleteMetal(metal.getId()));
 
         assertEquals(1, metalService.getAllMetals().size());
+    }
+
+    @Test
+    void getAllMetalsShouldReturnDefensiveCopy() {
+        metalService.addMetal("Железо", new BigDecimal("50"));
+
+        metalService.getAllMetals().clear();
+
+        assertEquals(1, metalService.getAllMetals().size());
+    }
+
+    @Test
+    void updateMetalShouldThrowWhenMetalNotFound() {
+        assertThrows(MetalNotFoundException.class,
+                () -> metalService.updateMetal(999, "Сталь", new BigDecimal("70")));
+    }
+
+    @Test
+    void deleteMetalShouldThrowWhenMetalNotFound() {
+        assertThrows(MetalNotFoundException.class,
+                () -> metalService.deleteMetal(999));
+    }
+
+    @Test
+    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
+        assertThrows(InvalidNameException.class,
+                () -> metalService.findByName(null)); // и clientService.findByName(null) во втором файле
     }
 }

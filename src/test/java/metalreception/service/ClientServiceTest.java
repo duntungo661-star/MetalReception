@@ -74,7 +74,7 @@ class ClientServiceTest {
         List<Client> found = clientService.findByName("ИВАН");
 
         assertEquals(1, found.size());
-        assertEquals("Иван Иванов", found.get(0).getName());
+        assertEquals("Иван Иванов", found.getFirst().getName());
     }
 
     @Test
@@ -151,5 +151,11 @@ class ClientServiceTest {
     void deleteClientShouldThrowWhenClientNotFound() {
         assertThrows(ClientNotFoundException.class,
                 () -> clientService.deleteClient(999));
+    }
+
+    @Test
+    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
+        assertThrows(InvalidNameException.class,
+                () -> clientService.findByName(null)); // и clientService.findByName(null) во втором файле
     }
 }
