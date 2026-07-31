@@ -135,6 +135,6 @@ class MetalServiceTest {
     @Test
     void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
         assertThrows(InvalidNameException.class,
-                () -> metalService.findByName(null)); // и clientService.findByName(null) во втором файле
+                () -> metalService.findByName(null));
     }
 }

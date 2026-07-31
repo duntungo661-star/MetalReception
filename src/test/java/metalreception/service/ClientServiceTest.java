@@ -156,6 +156,6 @@ class ClientServiceTest {
     @Test
     void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
         assertThrows(InvalidNameException.class,
-                () -> clientService.findByName(null)); // и clientService.findByName(null) во втором файле
+                () -> clientService.findByName(null));
     }
 }
