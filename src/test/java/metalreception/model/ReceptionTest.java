@@ -18,8 +18,8 @@ class ReceptionTest {
 
     @BeforeEach
     void setUp() {
-        client = new Client(1, "Иван", null);
-        metal = new Metal(1, "Железо", new BigDecimal("50"));
+        client = new Client("Иван", null);
+        metal = new Metal("Железо", new BigDecimal("50"));
     }
 
     @Test
@@ -136,7 +136,7 @@ class ReceptionTest {
 
     @Test
     void shouldRoundTotalPriceToTwoDecimalPlaces() {
-        Metal priceseMetal = new Metal(1, "Медь", new BigDecimal("87.333"));
+        Metal priceseMetal = new Metal("Медь", new BigDecimal("87.333"));
         Reception reception = new Reception(1, client, priceseMetal, new BigDecimal("12.345"), LocalDate.now());
 
         assertEquals(new BigDecimal("1078.13"), reception.getTotalPrice());
@@ -144,7 +144,7 @@ class ReceptionTest {
 
     @Test
     void  correctWeightShouldAlsoRoundNewTotalPrice() {
-        Metal pricesMetal = new Metal(1, "Медь", new BigDecimal("87.333"));
+        Metal pricesMetal = new Metal("Медь", new BigDecimal("87.333"));
         Reception reception = new Reception(1, client, pricesMetal, new BigDecimal("10"), LocalDate.now());
 
         reception.correctWeight(new BigDecimal("12.345"), "Пересчет веса");

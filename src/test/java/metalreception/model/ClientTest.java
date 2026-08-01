@@ -1,6 +1,5 @@
 package metalreception.model;
 
-import metalreception.exception.validation.InvalidIdException;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.exception.validation.InvalidPhoneException;
 import org.junit.jupiter.api.Test;
@@ -11,57 +10,48 @@ class ClientTest {
 
     @Test
     void shouldCreateClientWithValidData() {
-        Client client = new Client(1, "Иван Иванов", "+79991234567");
+        Client client = new Client("Иван Иванов", "+79991234567");
 
-        assertEquals(1, client.getId());
         assertEquals("Иван Иванов", client.getName());
         assertEquals("+79991234567", client.getPhone());
     }
 
     @Test
     void shouldAllowNullPhone() {
-        Client client = new Client(1, "Иван", null);
+        Client client = new Client("Иван", null);
 
         assertNull(client.getPhone());
     }
 
     @Test
     void shouldStripWhitespaceFromNameAndPhone() {
-        Client client = new Client(1, "  Иван  ", "  +79991234567  ");
+        Client client = new Client("  Иван  ", "  +79991234567  ");
 
         assertEquals("Иван", client.getName());
         assertEquals("+79991234567", client.getPhone());
     }
 
     @Test
-    void shouldThrowExceptionWhenIdIsZeroOrNegative() {
-        assertThrows(InvalidIdException.class,
-                () -> new Client(0, "Иван", null));
-        assertThrows(InvalidIdException.class,
-                () -> new Client(-1, "Иван", null));
-    }
-
-    @Test
     void shouldThrowExceptionWhenNameIsNull() {
         assertThrows(InvalidNameException.class,
-                () -> new Client(1, null, null));
+                () -> new Client(null, null));
     }
 
     @Test
     void shouldThrowExceptionWhenNameIsBlank() {
         assertThrows(InvalidNameException.class,
-                () -> new Client(1, "   ", null));
+                () -> new Client("   ", null));
     }
 
     @Test
     void shouldThrowExceptionWhenPhoneIsBlankButNotNull() {
         assertThrows(InvalidPhoneException.class,
-                () -> new Client(1, "Иван", "   "));
+                () -> new Client("Иван", "   "));
     }
 
     @Test
     void shouldUpdateNameThroughSetter() {
-        Client client = new Client(1, "Иван", null);
+        Client client = new Client("Иван", null);
 
         client.setName("Пётр");
 
@@ -70,7 +60,7 @@ class ClientTest {
 
     @Test
     void setNameShouldThrowExceptionWhenBlank() {
-        Client client = new Client(1, "Иван", null);
+        Client client = new Client("Иван", null);
 
         assertThrows(InvalidNameException.class,
                 () -> client.setName(""));
@@ -78,7 +68,7 @@ class ClientTest {
 
     @Test
     void shouldUpdatePhoneThroughSetter() {
-        Client client = new Client(1, "Иван", null);
+        Client client = new Client("Иван", null);
 
         client.setPhone("+79991234567");
 
@@ -87,7 +77,7 @@ class ClientTest {
 
     @Test
     void shouldClearPhoneWhenSetToNull() {
-        Client client = new Client(1, "Иван", "+79991234567");
+        Client client = new Client("Иван", "+79991234567");
 
         client.setPhone(null);
 
@@ -96,7 +86,7 @@ class ClientTest {
 
     @Test
     void setPhoneShouldThrowExceptionWhenBlankButNotNull() {
-        Client client = new Client(1, "Иван", null);
+        Client client = new Client("Иван", null);
 
         assertThrows(InvalidPhoneException.class,
                 () -> client.setPhone("   "));

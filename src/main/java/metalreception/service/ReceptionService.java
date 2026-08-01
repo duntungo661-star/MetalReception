@@ -5,93 +5,50 @@ import metalreception.model.Client;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
 import metalreception.model.ReceptionChange;
+import metalreception.repository.ReceptionRepository;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+@Service
 public class ReceptionService implements UsageChecker {
 
-    private final List<Reception> receptions = new ArrayList<>();
+    private final ReceptionRepository receptionRepository;
 
-    private int nextId = 1;
+    public ReceptionService(ReceptionRepository receptionRepository) {
+        this.receptionRepository = receptionRepository;
+    }
 
-    public Reception createReception(
-            Client client,
-            Metal metal,
-            BigDecimal weight
-    ) {
-        Reception reception = new Reception(
-                nextId,
-                client,
-                metal,
-                weight,
-                LocalDate.now()
-        );
-
-        receptions.add(reception);
-        nextId++;
-
-        return reception;
+    public Reception createReception(Client client, Metal metal, BigDecimal weight) {
+        Reception reception = new Reception(client, metal, weight, LocalDate.now());
+        return receptionRepository.save(reception);
     }
 
     public List<Reception> getAllReceptions() {
-        return new ArrayList<>(receptions);
-    }
-
-    public Optional<Reception> findById(int id) {
-        for (Reception reception : receptions) {
-            if (reception.getId() == id) {
-                return Optional.of(reception);
-            }
-        }
-
-        return Optional.empty();
+        return receptionRepository.findAll();
     }
 
     public Reception getByIdOrThrow(int id) {
-        return findById(id)
+        return receptionRepository.findById(id)
                 .orElseThrow(() -> new ReceptionNotFoundException(
                         "Приёмка с id=" + id + " не найдена."
                 ));
     }
 
     public List<Reception> findByClientId(int clientId) {
-        List<Reception> result = new ArrayList<>();
-
-        for (Reception reception : receptions) {
-            if (reception.getClient().getId() == clientId) {
-                result.add(reception);
-            }
-        }
-
-        return result;
+        return receptionRepository.findByClientId(clientId);
     }
 
     public List<Reception> findByMetalId(int metalId) {
-        List<Reception> result = new ArrayList<>();
-
-        for (Reception reception : receptions) {
-            if (reception.getMetal().getId() == metalId) {
-                result.add(reception);
-            }
-        }
-
-        return result;
+        return receptionRepository.findByMetalId(metalId);
     }
 
-    public Reception correctReceptionWeight(
-            int receptionId,
-            BigDecimal newWeight,
-            String reason
-    ) {
+    public Reception correctReceptionWeight(int receptionId, BigDecimal newWeight, String reason) {
         Reception reception = getByIdOrThrow(receptionId);
-
         reception.correctWeight(newWeight, reason);
-
-        return reception;
+        return receptionRepository.save(reception);
     }
 
     public List<ReceptionChange> getReceptionChanges(int receptionId) {
@@ -101,11 +58,11 @@ public class ReceptionService implements UsageChecker {
 
     @Override
     public boolean isClientInUse(int clientId) {
-        return !findByClientId(clientId).isEmpty();
+        return receptionRepository.existsByClientId(clientId);
     }
 
     @Override
     public boolean isMetalInUse(int metalId) {
-        return !findByMetalId(metalId).isEmpty();
+        return receptionRepository.existsByMetalId(metalId);
     }
 }

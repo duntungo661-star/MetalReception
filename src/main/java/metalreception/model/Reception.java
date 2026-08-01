@@ -1,7 +1,17 @@
 package metalreception.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import metalreception.exception.validation.InvalidChangeReasonException;
-import metalreception.exception.validation.InvalidIdException;
 import metalreception.exception.validation.InvalidReceptionDataException;
 import metalreception.exception.validation.InvalidWeightException;
 
@@ -11,35 +21,47 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "receptions")
 public class Reception {
 
     private static final int MONEY_SCALE = 2;
 
-    private final int id;
-    private final Client client;
-    private final Metal metal;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "metal_id", nullable = false)
+    private Metal metal;
+
+    @Column(nullable = false, precision = 12, scale = 3)
     private BigDecimal weight;
+
+    @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalPrice;
 
-    private final LocalDate date;
-    private final BigDecimal pricePerKgAtReception;
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @Column(name = "price_per_kg_at_reception", nullable = false, precision = 12, scale = 2)
+    private BigDecimal pricePerKgAtReception;
+
+    @OneToMany(mappedBy = "reception", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ReceptionChange> changes = new ArrayList<>();
 
-    public Reception(
-            int id,
-            Client client,
-            Metal metal,
-            BigDecimal weight,
-            LocalDate date
-    ) {
-        validateId(id);
+    protected Reception() {}
+
+    public Reception(Client client, Metal metal, BigDecimal weight, LocalDate date) {
         validateClient(client);
         validateMetal(metal);
         validateWeight(weight);
         validateDate(date);
 
-        this.id = id;
         this.client = client;
         this.metal = metal;
         this.weight = weight;
@@ -48,7 +70,7 @@ public class Reception {
         this.totalPrice = calculateTotalPrice(weight);
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -80,10 +102,7 @@ public class Reception {
         return new ArrayList<>(changes);
     }
 
-    public void correctWeight(
-            BigDecimal newWeight,
-            String reason
-    ) {
+    public void correctWeight(BigDecimal newWeight, String reason) {
         validateWeight(newWeight);
         validateReason(reason);
 
@@ -104,6 +123,7 @@ public class Reception {
                 newTotalPrice,
                 reason
         );
+        change.setReception(this);
 
         this.weight = newWeight;
         this.totalPrice = newTotalPrice;
@@ -111,58 +131,39 @@ public class Reception {
         changes.add(change);
     }
 
-    private void validateId(int id) {
-        if (id <= 0) {
-            throw new InvalidIdException(
-                    "ID приёмки должен быть больше нуля."
-            );
-        }
-    }
-
     private void validateClient(Client client) {
         if (client == null) {
-            throw new InvalidReceptionDataException(
-                    "Клиент не может быть null."
-            );
+            throw new InvalidReceptionDataException("Клиент не может быть null.");
         }
     }
 
     private void validateMetal(Metal metal) {
         if (metal == null) {
-            throw new InvalidReceptionDataException(
-                    "Металл не может быть null."
-            );
+            throw new InvalidReceptionDataException("Металл не может быть null.");
         }
     }
 
     private void validateWeight(BigDecimal weight) {
-        if (weight == null ||
-                weight.compareTo(BigDecimal.ZERO) <= 0) {
-
-            throw new InvalidWeightException(
-                    "Вес должен быть больше нуля."
-            );
+        if (weight == null || weight.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidWeightException("Вес должен быть больше нуля.");
         }
     }
 
     private void validateDate(LocalDate date) {
         if (date == null) {
-            throw new InvalidReceptionDataException(
-                    "Дата приёмки не может быть null."
-            );
+            throw new InvalidReceptionDataException("Дата приёмки не может быть null.");
         }
     }
 
     private void validateReason(String reason) {
         if (reason == null || reason.isBlank()) {
-            throw new InvalidChangeReasonException(
-                    "Необходимо указать причину изменения."
-            );
+            throw new InvalidChangeReasonException("Необходимо указать причину изменения.");
         }
     }
 
     private BigDecimal calculateTotalPrice(BigDecimal weight) {
-        return weight.multiply(pricePerKgAtReception).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+        return weight.multiply(pricePerKgAtReception)
+                .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
     @Override

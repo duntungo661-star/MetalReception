@@ -1,28 +1,44 @@
 package metalreception.model;
 
-import metalreception.exception.validation.InvalidIdException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.exception.validation.InvalidPriceException;
 
+
 import java.math.BigDecimal;
 
+@Entity
+@Table (name = "metals")
 public class Metal {
 
-    private final int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(name = "price_per_kg", nullable = false, precision = 12, scale = 2)
     private BigDecimal pricePerKg;
 
-    public Metal(int id, String name, BigDecimal pricePerKg) {
-        validateId(id);
+    protected Metal() {
+
+    }
+
+    public Metal(String name, BigDecimal pricePerKg) {
         validateName(name);
         validatePrice(pricePerKg);
 
-        this.id = id;
         this.name = name.strip();
         this.pricePerKg = pricePerKg;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -42,14 +58,6 @@ public class Metal {
     public void setPricePerKg(BigDecimal pricePerKg) {
         validatePrice(pricePerKg);
         this.pricePerKg = pricePerKg;
-    }
-
-    private void validateId(int id) {
-        if (id <= 0) {
-            throw new InvalidIdException(
-                    "ID металла должен быть больше нуля."
-            );
-        }
     }
 
     private void validateName(String name) {

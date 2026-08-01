@@ -1,26 +1,40 @@
 package metalreception.model;
 
-import metalreception.exception.validation.InvalidIdException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.exception.validation.InvalidPhoneException;
 
+@Entity
+@Table(name = "clients")
 public class Client {
 
-    private final int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
     private String name;
+
     private String phone;
 
-    public Client(int id, String name, String phone) {
-        validateId(id);
+    protected Client() {
+        // Пустой конструктор нужен Hibernate — не использовать напрямую в коде.
+    }
+
+    public Client(String name, String phone) {
         validateName(name);
         validatePhone(phone);
 
-        this.id = id;
         this.name = name.strip();
         this.phone = normalizePhone(phone);
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -40,14 +54,6 @@ public class Client {
     public void setPhone(String phone) {
         validatePhone(phone);
         this.phone = normalizePhone(phone);
-    }
-
-    private void validateId(int id) {
-        if (id <= 0) {
-            throw new InvalidIdException(
-                    "ID клиента должен быть больше нуля."
-            );
-        }
     }
 
     private void validateName(String name) {

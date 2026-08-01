@@ -4,54 +4,33 @@ import metalreception.exception.business.ClientInUseException;
 import metalreception.exception.notfound.ClientNotFoundException;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.model.Client;
+import metalreception.repository.ClientRepository;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
-
+@Service
 public class ClientService {
 
-    private final List<Client> clients = new ArrayList<>();
+    private final ClientRepository clientRepository;
     private final UsageChecker usageChecker;
 
-    private int nextId = 1;
-
-    public ClientService(UsageChecker usageChecker) {
-        if (usageChecker == null) {
-            throw new IllegalArgumentException(
-                    "UsageChecker не может быть null."
-            );
-        }
-
+    public ClientService(ClientRepository clientRepository, UsageChecker usageChecker) {
+        this.clientRepository = clientRepository;
         this.usageChecker = usageChecker;
     }
 
     public Client addClient(String name, String phone) {
-        Client client = new Client(nextId, name, phone);
-
-        clients.add(client);
-        nextId++;
-
-        return client;
+        Client client = new Client(name, phone);
+        return clientRepository.save(client);
     }
 
     public List<Client> getAllClients() {
-        return new ArrayList<>(clients);
-    }
-
-    public Optional<Client> findById(int id) {
-        for (Client client : clients) {
-            if (client.getId() == id) {
-                return Optional.of(client);
-            }
-        }
-
-        return Optional.empty();
+        return clientRepository.findAll();
     }
 
     public Client getByIdOrThrow(int id) {
-        return findById(id)
+        return clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(
                         "Клиент с id=" + id + " не найден."
                 ));
@@ -64,21 +43,11 @@ public class ClientService {
             );
         }
 
-        String normalizedNamePart =
-                namePart.strip().toLowerCase(Locale.ROOT);
-
-        List<Client> result = new ArrayList<>();
-
-        for (Client client : clients) {
-            String clientName =
-                    client.getName().toLowerCase(Locale.ROOT);
-
-            if (clientName.contains(normalizedNamePart)) {
-                result.add(client);
-            }
-        }
-
-        return result;
+        return clientRepository.findAll().stream()
+                .filter(client -> client.getName()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(namePart.strip().toLowerCase(Locale.ROOT)))
+                .toList();
     }
 
     public Client updateClient(
@@ -99,7 +68,7 @@ public class ClientService {
             client.setPhone(newPhone);
         }
 
-        return client;
+        return clientRepository.save(client);
     }
 
     public void deleteClient(int id) {
@@ -112,6 +81,6 @@ public class ClientService {
             );
         }
 
-        clients.remove(client);
+        clientRepository.delete(client);
     }
 }

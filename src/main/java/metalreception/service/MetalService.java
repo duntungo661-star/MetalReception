@@ -4,52 +4,35 @@ import metalreception.exception.business.MetalInUseException;
 import metalreception.exception.notfound.MetalNotFoundException;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.model.Metal;
+import metalreception.repository.MetalRepository;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
+@Service
 public class MetalService {
 
-    private final List<Metal> metals = new ArrayList<>();
+    private final MetalRepository metalRepository;
     private final UsageChecker usageChecker;
 
-    private int nextId = 1;
-
-    public MetalService(UsageChecker usageChecker) {
-        if (usageChecker == null) {
-            throw new IllegalArgumentException(
-                    "UsageChecker не может быть null."
-            );
-        }
-
+    public MetalService(MetalRepository metalRepository, UsageChecker usageChecker) {
+        this.metalRepository = metalRepository;
         this.usageChecker = usageChecker;
     }
 
     public Metal addMetal(String name, BigDecimal pricePerKg) {
-        Metal metal = new Metal(nextId, name, pricePerKg);
-        metals.add(metal);
-        nextId++;
-        return metal;
+        Metal metal = new Metal(name, pricePerKg);
+        return metalRepository.save(metal);
     }
 
     public List<Metal> getAllMetals() {
-        return new ArrayList<>(metals);
-    }
-
-    public Optional<Metal> findById(int id) {
-        for (Metal metal : metals) {
-            if (metal.getId() == id) {
-                return Optional.of(metal);
-            }
-        }
-        return Optional.empty();
+        return metalRepository.findAll();
     }
 
     public Metal getByIdOrThrow(int id) {
-        return findById(id)
+        return metalRepository.findById(id)
                 .orElseThrow(() -> new MetalNotFoundException(
                         "Металл с id=" + id + " не найден."
                 ));
@@ -62,32 +45,24 @@ public class MetalService {
             );
         }
 
-        String normalizedNamePart =
-                namePart.strip().toLowerCase(Locale.ROOT);
-
-        List<Metal> result = new ArrayList<>();
-
-        for (Metal metal : metals) {
-            String metalName =
-                    metal.getName().toLowerCase(Locale.ROOT);
-
-            if (metalName.contains(normalizedNamePart)) {
-                result.add(metal);
-            }
-        }
-
-        return result;
+        return metalRepository.findAll().stream()
+                .filter(metal -> metal.getName()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(namePart.strip().toLowerCase(Locale.ROOT)))
+                .toList();
     }
 
     public Metal updateMetal(int id, String newName, BigDecimal newPrice) {
         Metal metal = getByIdOrThrow(id);
+
         if (newName != null && !newName.isBlank()) {
             metal.setName(newName);
         }
         if (newPrice != null) {
             metal.setPricePerKg(newPrice);
         }
-        return metal;
+
+        return metalRepository.save(metal);
     }
 
     public void deleteMetal(int id) {
@@ -100,6 +75,6 @@ public class MetalService {
             );
         }
 
-        metals.remove(metal);
+        metalRepository.delete(metal);
     }
 }
