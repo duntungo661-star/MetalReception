@@ -23,7 +23,7 @@ class ReceptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        receptionService = new ReceptionService();
+        receptionService = new ReceptionService(null);
         client = new Client("Иван", null);
         metal = new Metal("Железо", new BigDecimal("50"));
     }

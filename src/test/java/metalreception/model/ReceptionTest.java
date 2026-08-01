@@ -24,18 +24,17 @@ class ReceptionTest {
 
     @Test
     void shouldCalculateTotalPriceOnCreation() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
-        // 10 кг * 50 за кг = 500
         assertEquals(new BigDecimal("500.00"), reception.getTotalPrice());
     }
 
     @Test
     void shouldFixHistoricalPriceAtCreationTime() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
         metal.setPricePerKg(new BigDecimal("100"));
@@ -47,33 +46,38 @@ class ReceptionTest {
     @Test
     void shouldThrowExceptionWhenClientIsNull() {
         assertThrows(InvalidReceptionDataException.class,
-                () -> new Reception(1, null, metal, new BigDecimal("10"), LocalDate.now()));
+                () -> new Reception(null, metal,
+                        new BigDecimal("10"), LocalDate.now()));
     }
 
     @Test
     void shouldThrowExceptionWhenMetalIsNull() {
         assertThrows(InvalidReceptionDataException.class,
-                () -> new Reception(1, client, null, new BigDecimal("10"), LocalDate.now()));
+                () -> new Reception(client, null,
+                        new BigDecimal("10"), LocalDate.now()));
     }
 
     @Test
     void shouldThrowExceptionWhenWeightIsZeroOrNegative() {
         assertThrows(InvalidWeightException.class,
-                () -> new Reception(1, client, metal, BigDecimal.ZERO, LocalDate.now()));
+                () -> new Reception(client, metal, BigDecimal.ZERO, LocalDate.now()));
+
         assertThrows(InvalidWeightException.class,
-                () -> new Reception(1, client, metal, new BigDecimal("-5"), LocalDate.now()));
+                () -> new Reception(client, metal,
+                        new BigDecimal("-5"), LocalDate.now()));
     }
 
     @Test
     void shouldThrowExceptionWhenDateIsNull() {
         assertThrows(InvalidReceptionDataException.class,
-                () -> new Reception(1, client, metal, new BigDecimal("10"), null));
+                () -> new Reception(client, metal,
+                        new BigDecimal("10"), null));
     }
 
     @Test
     void correctWeightShouldRecalculateTotalPrice() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
         reception.correctWeight(new BigDecimal("20"), "Ошибка при взвешивании");
@@ -85,8 +89,8 @@ class ReceptionTest {
 
     @Test
     void correctWeightShouldAddEntryToHistory() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
         reception.correctWeight(new BigDecimal("20"), "Ошибка при взвешивании");
@@ -103,8 +107,8 @@ class ReceptionTest {
 
     @Test
     void correctWeightShouldThrowExceptionWhenNewWeightEqualsOld() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
         assertThrows(InvalidWeightException.class,
@@ -113,8 +117,8 @@ class ReceptionTest {
 
     @Test
     void correctWeightShouldThrowExceptionWhenReasonIsBlank() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
 
         assertThrows(InvalidChangeReasonException.class,
@@ -123,21 +127,20 @@ class ReceptionTest {
 
     @Test
     void getChangesShouldReturnDefensiveCopy() {
-        Reception reception = new Reception(
-                1, client, metal, new BigDecimal("10"), LocalDate.now()
+        Reception reception = new Reception(client, metal,
+                new BigDecimal("10"), LocalDate.now()
         );
         reception.correctWeight(new BigDecimal("20"), "Причина");
 
-        reception.getChanges().clear(); // пытаемся испортить список извне
-
-        // внутренний список не должен пострадать
+        reception.getChanges().clear();
         assertEquals(1, reception.getChanges().size());
     }
 
     @Test
     void shouldRoundTotalPriceToTwoDecimalPlaces() {
         Metal priceseMetal = new Metal("Медь", new BigDecimal("87.333"));
-        Reception reception = new Reception(1, client, priceseMetal, new BigDecimal("12.345"), LocalDate.now());
+        Reception reception = new Reception(client, priceseMetal,
+                new BigDecimal("12.345"), LocalDate.now());
 
         assertEquals(new BigDecimal("1078.13"), reception.getTotalPrice());
     }
@@ -145,7 +148,8 @@ class ReceptionTest {
     @Test
     void  correctWeightShouldAlsoRoundNewTotalPrice() {
         Metal pricesMetal = new Metal("Медь", new BigDecimal("87.333"));
-        Reception reception = new Reception(1, client, pricesMetal, new BigDecimal("10"), LocalDate.now());
+        Reception reception = new Reception(client, pricesMetal,
+                new BigDecimal("10"), LocalDate.now());
 
         reception.correctWeight(new BigDecimal("12.345"), "Пересчет веса");
 

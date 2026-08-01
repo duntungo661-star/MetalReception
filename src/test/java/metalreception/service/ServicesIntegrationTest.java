@@ -21,7 +21,7 @@ class ServicesIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        receptionService = new ReceptionService();
+        receptionService = new ReceptionService(null);
         clientService = new ClientService(null, receptionService);
         metalService = new MetalService(null, receptionService);
     }
