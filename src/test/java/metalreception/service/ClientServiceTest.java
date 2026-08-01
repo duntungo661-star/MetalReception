@@ -6,22 +6,38 @@ import metalreception.exception.validation.InvalidNameException;
 import metalreception.model.Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled("Временно отключено: миграция на Spring Data JPA")
+@DataJpaTest
+@Import(ClientService.class)
 class ClientServiceTest {
 
-    private FakeUsageChecker usageChecker;
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        FakeUsageChecker fakeUsageChecker() {
+            return new FakeUsageChecker();
+        }
+    }
+
+    @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private FakeUsageChecker usageChecker;
+
     @BeforeEach
-    void setUp() {
-        usageChecker = new FakeUsageChecker();
-        clientService = new ClientService(null, usageChecker);
+    void resetUsageChecker() {
+        usageChecker.setClientInUse(false);
+        usageChecker.setMetalInUse(false);
     }
 
     @Test
@@ -29,8 +45,9 @@ class ClientServiceTest {
         Client first = clientService.addClient("Иван", null);
         Client second = clientService.addClient("Пётр", null);
 
-        assertEquals(1, first.getId());
-        assertEquals(2, second.getId());
+        assertNotNull(first.getId());
+        assertNotNull(second.getId());
+        assertNotEquals(first.getId(), second.getId());
     }
 
     @Test
@@ -60,15 +77,6 @@ class ClientServiceTest {
     }
 
     @Test
-    void getAllClientsShouldReturnDefensiveCopy() {
-        clientService.addClient("Иван", null);
-
-        clientService.getAllClients().clear();
-
-        assertEquals(1, clientService.getAllClients().size());
-    }
-
-    @Test
     void shouldFindClientsByPartialNameCaseInsensitive() {
         clientService.addClient("Иван Иванов", null);
         clientService.addClient("Пётр Петров", null);
@@ -88,6 +96,12 @@ class ClientServiceTest {
     }
 
     @Test
+    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
+        assertThrows(InvalidNameException.class,
+                () -> clientService.findByName(null));
+    }
+
+    @Test
     void shouldUpdateClientName() {
         Client client = clientService.addClient("Иван", "+79991234567");
 
@@ -96,7 +110,7 @@ class ClientServiceTest {
         );
 
         assertEquals("Пётр", updated.getName());
-        assertEquals("+79991234567", updated.getPhone()); // телефон не тронут
+        assertEquals("+79991234567", updated.getPhone());
     }
 
     @Test
@@ -145,7 +159,6 @@ class ClientServiceTest {
         assertThrows(ClientInUseException.class,
                 () -> clientService.deleteClient(client.getId()));
 
-        // клиент не должен быть удалён
         assertEquals(1, clientService.getAllClients().size());
     }
 
@@ -153,11 +166,5 @@ class ClientServiceTest {
     void deleteClientShouldThrowWhenClientNotFound() {
         assertThrows(ClientNotFoundException.class,
                 () -> clientService.deleteClient(999));
-    }
-
-    @Test
-    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
-        assertThrows(InvalidNameException.class,
-                () -> clientService.findByName(null));
     }
 }

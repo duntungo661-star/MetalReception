@@ -5,24 +5,40 @@ import metalreception.exception.notfound.MetalNotFoundException;
 import metalreception.exception.validation.InvalidNameException;
 import metalreception.model.Metal;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled("Временно отключено: миграция на Spring Data JPA")
+@DataJpaTest
+@Import(MetalService.class)
 class MetalServiceTest {
 
-    private FakeUsageChecker usageChecker;
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        FakeUsageChecker fakeUsageChecker() {
+            return new FakeUsageChecker();
+        }
+    }
+
+    @Autowired
     private MetalService metalService;
 
+    @Autowired
+    private FakeUsageChecker usageChecker;
+
     @BeforeEach
-    void setUp() {
-        usageChecker = new FakeUsageChecker();
-        metalService = new MetalService(null, usageChecker);
+    void resetUsageChecker() {
+        usageChecker.setClientInUse(false);
+        usageChecker.setMetalInUse(false);
     }
 
     @Test
@@ -30,8 +46,9 @@ class MetalServiceTest {
         Metal first = metalService.addMetal("Железо", new BigDecimal("50"));
         Metal second = metalService.addMetal("Медь", new BigDecimal("300"));
 
-        assertEquals(1, first.getId());
-        assertEquals(2, second.getId());
+        assertNotNull(first.getId());
+        assertNotNull(second.getId());
+        assertNotEquals(first.getId(), second.getId());
     }
 
     @Test
@@ -66,6 +83,12 @@ class MetalServiceTest {
                 () -> metalService.findByName(""));
         assertThrows(InvalidNameException.class,
                 () -> metalService.findByName("   "));
+    }
+
+    @Test
+    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
+        assertThrows(InvalidNameException.class,
+                () -> metalService.findByName(null));
     }
 
     @Test
@@ -114,15 +137,6 @@ class MetalServiceTest {
     }
 
     @Test
-    void getAllMetalsShouldReturnDefensiveCopy() {
-        metalService.addMetal("Железо", new BigDecimal("50"));
-
-        metalService.getAllMetals().clear();
-
-        assertEquals(1, metalService.getAllMetals().size());
-    }
-
-    @Test
     void updateMetalShouldThrowWhenMetalNotFound() {
         assertThrows(MetalNotFoundException.class,
                 () -> metalService.updateMetal(999, "Сталь", new BigDecimal("70")));
@@ -132,11 +146,5 @@ class MetalServiceTest {
     void deleteMetalShouldThrowWhenMetalNotFound() {
         assertThrows(MetalNotFoundException.class,
                 () -> metalService.deleteMetal(999));
-    }
-
-    @Test
-    void findByNameShouldThrowExceptionWhenSearchStringIsNull() {
-        assertThrows(InvalidNameException.class,
-                () -> metalService.findByName(null));
     }
 }

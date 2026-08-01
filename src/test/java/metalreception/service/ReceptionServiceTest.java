@@ -5,27 +5,39 @@ import metalreception.model.Client;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
 import metalreception.model.ReceptionChange;
+import metalreception.repository.ClientRepository;
+import metalreception.repository.MetalRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled("Временно отключено: миграция на Spring Data JPA")
+@DataJpaTest
+@Import(ReceptionService.class)
 class ReceptionServiceTest {
 
+    @Autowired
     private ReceptionService receptionService;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
+    private MetalRepository metalRepository;
+
     private Client client;
     private Metal metal;
 
     @BeforeEach
     void setUp() {
-        receptionService = new ReceptionService(null);
-        client = new Client("Иван", null);
-        metal = new Metal("Железо", new BigDecimal("50"));
+        client = clientRepository.save(new Client("Иван", null));
+        metal = metalRepository.save(new Metal("Железо", new BigDecimal("50")));
     }
 
     @Test
@@ -37,8 +49,9 @@ class ReceptionServiceTest {
                 client, metal, new BigDecimal("5")
         );
 
-        assertEquals(1, first.getId());
-        assertEquals(2, second.getId());
+        assertNotNull(first.getId());
+        assertNotNull(second.getId());
+        assertNotEquals(first.getId(), second.getId());
     }
 
     @Test
@@ -62,7 +75,7 @@ class ReceptionServiceTest {
     void shouldFindReceptionsByClientId() {
         receptionService.createReception(client, metal, new BigDecimal("10"));
 
-        Client otherClient = new Client("Пётр", null);
+        Client otherClient = clientRepository.save(new Client("Пётр", null));
         receptionService.createReception(otherClient, metal, new BigDecimal("5"));
 
         List<Reception> found = receptionService.findByClientId(client.getId());
@@ -75,7 +88,7 @@ class ReceptionServiceTest {
     void shouldFindReceptionsByMetalId() {
         receptionService.createReception(client, metal, new BigDecimal("10"));
 
-        Metal otherMetal = new Metal("Медь", new BigDecimal("300"));
+        Metal otherMetal = metalRepository.save(new Metal("Медь", new BigDecimal("300")));
         receptionService.createReception(client, otherMetal, new BigDecimal("5"));
 
         List<Reception> found = receptionService.findByMetalId(metal.getId());

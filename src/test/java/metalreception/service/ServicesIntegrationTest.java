@@ -5,26 +5,27 @@ import metalreception.exception.business.MetalInUseException;
 import metalreception.model.Client;
 import metalreception.model.Metal;
 import metalreception.model.Reception;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
-@Disabled("Временно отключено: миграция на Spring Data JPA")
+
+@DataJpaTest
+@Import({ClientService.class, MetalService.class, ReceptionService.class})
 class ServicesIntegrationTest {
 
+    @Autowired
     private ReceptionService receptionService;
-    private ClientService clientService;
-    private MetalService metalService;
 
-    @BeforeEach
-    void setUp() {
-        receptionService = new ReceptionService(null);
-        clientService = new ClientService(null, receptionService);
-        metalService = new MetalService(null, receptionService);
-    }
+    @Autowired
+    private ClientService clientService;
+
+    @Autowired
+    private MetalService metalService;
 
     @Test
     void shouldAllowDeletingClientWithoutReceptions() {
